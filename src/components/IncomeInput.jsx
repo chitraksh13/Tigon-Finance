@@ -1,23 +1,36 @@
 function IncomeInput({ income, setIncome, onSave }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
-      <h3 className="text-lg font-semibold text-gray-700 mb-3">
-  Income
-</h3>
+    <div className="fintech-card fade-in" style={{padding: 24}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20}}>
+        <div style={{
+          width:36,height:36,borderRadius:10,
+          background:'rgba(52,211,153,0.12)',
+          display:'flex',alignItems:'center',justifyContent:'center',fontSize:16
+        }}>💰</div>
+        <div>
+          <h3 style={{fontFamily:'Syne',fontWeight:700,fontSize:'1rem',color:'var(--text-primary)',margin:0}}>Monthly Income</h3>
+          <p style={{fontSize:'0.78rem',color:'var(--text-secondary)',margin:0}}>Set your income for this period</p>
+        </div>
+      </div>
 
-      <input
-  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
-  type="number"
-  value={income}
-  onChange={(e) => setIncome(Number(e.target.value))}
-/>
-<button
-  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition mt-3"
-  onClick={() => onSave()}
->
-  Save Income
-</button>
+      <div style={{position:'relative',marginBottom:16}}>
+        <span style={{
+          position:'absolute',left:14,top:'50%',transform:'translateY(-50%)',
+          color:'var(--text-secondary)',fontWeight:600,fontSize:'1rem',pointerEvents:'none'
+        }}>₹</span>
+        <input
+          className="fintech-input"
+          type="number"
+          value={income}
+          onChange={(e) => setIncome(Number(e.target.value))}
+          style={{paddingLeft: 30}}
+          placeholder="0"
+        />
+      </div>
 
+      <button className="btn-primary" onClick={onSave} style={{width:'100%'}}>
+        Save Income
+      </button>
     </div>
   );
 }

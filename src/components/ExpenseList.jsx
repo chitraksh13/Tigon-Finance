@@ -1,101 +1,93 @@
+const CATEGORY_COLORS = {
+  Food: '#f59e0b', Transport: '#38bdf8', Housing: '#a78bfa',
+  Health: '#34d399', Entertainment: '#f87171', Shopping: '#fb923c',
+  Education: '#60a5fa', Other: '#8899b4'
+};
+
+function getCategoryColor(cat) {
+  return CATEGORY_COLORS[cat] || '#8899b4';
+}
+
 function ExpenseList({
-  expenses,
-  editingId,
-  setEditingId,
-  editAmount,
-  setEditAmount,
-  editCategory,
-  setEditCategory,
-  onSaveEdit,
-  onDelete,
-  editAmountError,
+  expenses, editingId, setEditingId, editAmount, setEditAmount,
+  editCategory, setEditCategory, onSaveEdit, onDelete, editAmountError
 }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
-      <h3 className="text-lg font-semibold text-gray-700 mb-3">
-        Expenses List
-      </h3>
+    <div className="fintech-card fade-in" style={{padding: 24}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <div style={{width:36,height:36,borderRadius:10,background:'rgba(56,189,248,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16}}>📋</div>
+          <div>
+            <h3 style={{fontFamily:'Syne',fontWeight:700,fontSize:'1rem',color:'var(--text-primary)',margin:0}}>Expenses</h3>
+            <p style={{fontSize:'0.78rem',color:'var(--text-secondary)',margin:0}}>{expenses.length} transaction{expenses.length !== 1 ? 's' : ''}</p>
+          </div>
+        </div>
+      </div>
 
       {expenses.length === 0 ? (
-        <p className="text-gray-500 text-sm">No expenses added yet.</p>
+        <div style={{
+          textAlign:'center',padding:'36px 20px',
+          border:'1px dashed var(--border)',borderRadius:12,
+          color:'var(--text-muted)'
+        }}>
+          <div style={{fontSize:32,marginBottom:10}}>💸</div>
+          <p style={{margin:0,fontSize:'0.9rem'}}>No expenses yet this month</p>
+          <p style={{margin:'4px 0 0',fontSize:'0.8rem',color:'var(--text-muted)'}}>Add your first expense above</p>
+        </div>
       ) : (
-        <ul className="space-y-3">
-          {expenses.map((exp) => (
-            <li
-              key={exp.id}
-              className="flex justify-between items-center"
-            >
-              {editingId === exp.id ? (
-                <div className="flex gap-2 w-full">
-                  <input
-                    className="border p-1 rounded w-1/3"
-                    value={editCategory}
-                    onChange={(e) => setEditCategory(e.target.value)}
-                  />
-                  <input
-                  type="number"
-                  value={editAmount}
-                  onChange={(e) => setEditAmount(e.target.value)}
-                  className={`border p-1 rounded ${
-                    editAmountError ? "shake border-red-500" : ""
-                  }`}
-                />
-
-                  <button
-  onClick={() => onSaveEdit(exp.id)}
-  disabled={Number(editAmount) <= 0}
-  className={`font-semibold ${
-    Number(editAmount) <= 0
-      ? "text-gray-400 cursor-not-allowed"
-      : "text-green-600"
-  }`}
->
-  Save
-</button>
-
-                  <button
-                    className="text-gray-500"
-                    onClick={() => setEditingId(null)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <span className="text-gray-600">
-                    {exp.category}: ₹{exp.amount}
-                  </span>
-                  <div className="flex gap-3">
-  <button
-    className="text-blue-600"
-    onClick={() => {
-      setEditingId(exp.id);
-      setEditAmount(exp.amount);
-      setEditCategory(exp.category);
-    }}
-    title="Edit expense"
-  >
-    ✏️
-  </button>
-
-  <button
-    className="text-red-600"
-    onClick={() => {
-      if (window.confirm("Delete this expense?")) {
-        onDelete(exp.id);
-      }
-    }}
-    title="Delete expense"
-  >
-    🗑️
-  </button>
-</div>
-
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
+        <div style={{display:'flex',flexDirection:'column',gap:8,maxHeight:320,overflowY:'auto',paddingRight:4}}>
+          {expenses.map((exp) => {
+            const color = getCategoryColor(exp.category);
+            return (
+              <div key={exp.id} style={{
+                background:'rgba(255,255,255,0.025)',border:'1px solid var(--border)',
+                borderRadius:12,padding:'12px 14px',
+                transition:'border-color 0.2s,background 0.2s',
+                borderLeft:`3px solid ${color}`
+              }}>
+                {editingId === exp.id ? (
+                  <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
+                    <input
+                      className="fintech-input"
+                      style={{flex:1,minWidth:100,padding:'8px 12px',fontSize:'0.875rem'}}
+                      value={editCategory}
+                      onChange={(e) => setEditCategory(e.target.value)}
+                      placeholder="Category"
+                    />
+                    <div style={{position:'relative',flex:1,minWidth:90}}>
+                      <span style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',color:'var(--text-secondary)',fontSize:'0.875rem'}}>₹</span>
+                      <input
+                        type="number"
+                        value={editAmount}
+                        onChange={(e) => setEditAmount(e.target.value)}
+                        className={`fintech-input ${editAmountError ? 'shake' : ''}`}
+                        style={{paddingLeft:24,padding:'8px 8px 8px 24px',fontSize:'0.875rem'}}
+                      />
+                    </div>
+                    <button className="btn-save" disabled={Number(editAmount) <= 0} onClick={() => onSaveEdit(exp.id)}>Save</button>
+                    <button className="btn-secondary" style={{padding:'7px 12px',fontSize:'0.8rem'}} onClick={() => setEditingId(null)}>✕</button>
+                  </div>
+                ) : (
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                    <div style={{display:'flex',alignItems:'center',gap:10}}>
+                      <div>
+                        <span style={{fontSize:'0.875rem',fontWeight:600,color:'var(--text-primary)'}}>{exp.category || 'Uncategorized'}</span>
+                        <div style={{fontSize:'0.75rem',color:'var(--text-muted)',marginTop:1}}>expense</div>
+                      </div>
+                    </div>
+                    <div style={{display:'flex',alignItems:'center',gap:10}}>
+                      <span style={{fontFamily:'Syne',fontWeight:700,fontSize:'1rem',color:'var(--accent-red)'}}>
+                        −₹{Number(exp.amount).toLocaleString('en-IN')}
+                      </span>
+                      <button className="btn-edit" onClick={() => { setEditingId(exp.id); setEditAmount(exp.amount); setEditCategory(exp.category); }}>Edit</button>
+                      <button className="btn-danger" onClick={() => { if (window.confirm("Delete this expense?")) onDelete(exp.id); }}>Delete</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );
