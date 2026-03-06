@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { authFetch, BASE_URL } from "../utils/api";
 
 function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -17,35 +18,19 @@ function GoogleIcon() {
   );
 }
 
-const GOOGLE_ERROR_MESSAGES = {
-  google_cancelled:    "Google sign-in was cancelled.",
-  google_token_failed: "Google sign-in failed. Please try again.",
-  google_no_email:     "Your Google account did not provide an email.",
-  google_server_error: "A server error occurred. Please try again.",
-};
-
 function Login() {
-  const [email, setEmail]         = useState("");
-  const [password, setPassword]   = useState("");
-  const [errors, setErrors]       = useState({});
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
-  const [loading, setLoading]     = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  // Show error if redirected back from a failed Google login
-  useEffect(() => {
-    const errorCode = searchParams.get("error");
-    if (errorCode) {
-      setServerError(GOOGLE_ERROR_MESSAGES[errorCode] || "Google sign-in failed.");
-    }
-  }, []);
 
   function validate() {
     const errs = {};
-    if (!email.trim())          errs.email = "Email is required";
+    if (!email.trim()) errs.email = "Email is required";
     else if (!validateEmail(email)) errs.email = "Please enter a valid email address";
-    if (!password)              errs.password = "Password is required";
+    if (!password) errs.password = "Password is required";
     else if (password.length < 6) errs.password = "Password must be at least 6 characters";
     return errs;
   }
@@ -57,9 +42,8 @@ function Login() {
     setServerError("");
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/login", {
+      const res = await authFetch("/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim(), password }),
       });
       const data = await res.json();
@@ -67,17 +51,12 @@ function Login() {
       localStorage.setItem("token", data.token);
       const decoded = jwtDecode(data.token);
       localStorage.setItem("role", decoded.role);
-      navigate("/dashboard");
+      navigate("/");
     } catch {
       setServerError("Server error. Please try again.");
     } finally {
       setLoading(false);
     }
-  }
-
-  function handleGoogleLogin() {
-    // Redirect to backend which starts the Google OAuth flow
-    window.location.href = "http://localhost:5000/auth/google";
   }
 
   const set = (field) => (e) => {
@@ -87,8 +66,7 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen grid-bg flex items-center justify-center p-4"
-      style={{ background: "var(--bg-primary)" }}>
+    <div className="min-h-screen grid-bg flex items-center justify-center p-4" style={{ background: "var(--bg-primary)" }}>
       <div style={{ position: "fixed", top: "20%", left: "15%", width: 400, height: 400, background: "radial-gradient(circle,rgba(56,189,248,0.06) 0%,transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "fixed", bottom: "20%", right: "10%", width: 500, height: 500, background: "radial-gradient(circle,rgba(99,102,241,0.06) 0%,transparent 70%)", pointerEvents: "none" }} />
 
@@ -97,23 +75,16 @@ function Login() {
         <div style={{ textAlign: "center", marginBottom: 36 }}>
           <Link to="/home" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none", marginBottom: 20 }}>
             <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg,#38bdf8,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 21, boxShadow: "0 4px 14px rgba(56,189,248,0.3)" }}>⚡</div>
-            <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "1.5rem", color: "var(--text-primary)", letterSpacing: "-0.03em" }}>
-              Tigon<span style={{ color: "var(--accent-cyan)" }}>.</span>
-            </span>
+            <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "1.5rem", color: "var(--text-primary)", letterSpacing: "-0.03em" }}>Tigon<span style={{ color: "var(--accent-cyan)" }}>.</span></span>
           </Link>
-          <h1 style={{ fontFamily: "Syne", fontSize: "1.875rem", fontWeight: 700, color: "var(--text-primary)", margin: "16px 0 8px" }}>
-            Welcome back
-          </h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.9375rem", margin: 0 }}>
-            Sign in to your financial dashboard
-          </p>
+          <h1 style={{ fontFamily: "Syne", fontSize: "1.875rem", fontWeight: 700, color: "var(--text-primary)", margin: "16px 0 8px" }}>Welcome back</h1>
+          <p style={{ color: "var(--text-secondary)", fontSize: "0.9375rem", margin: 0 }}>Sign in to your financial dashboard</p>
         </div>
 
         <div className="fintech-card" style={{ padding: 32 }}>
-
-          {/* Google Sign-In Button */}
+          {/* Google Sign-In */}
           <button
-            onClick={handleGoogleLogin}
+            onClick={() => { window.location.href = `${BASE_URL}/auth/google`; }}
             style={{
               width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
               background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)",
@@ -121,7 +92,7 @@ function Login() {
               color: "var(--text-primary)", fontFamily: "DM Sans", fontSize: "0.9375rem", fontWeight: 500,
               transition: "background 0.2s, border-color 0.2s",
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.09)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.14)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "var(--border)"; }}
           >
             <GoogleIcon />
@@ -142,8 +113,7 @@ function Login() {
               type="email" placeholder="you@example.com"
               className={`fintech-input ${errors.email ? "shake" : ""}`}
               style={errors.email ? { borderColor: "var(--accent-red)" } : {}}
-              value={email} onChange={set("email")}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              value={email} onChange={set("email")} onKeyDown={(e) => e.key === "Enter" && handleLogin()}
             />
             {errors.email && <p style={{ color: "var(--accent-red)", fontSize: "0.75rem", margin: "5px 0 0" }}>⚠ {errors.email}</p>}
           </div>
@@ -155,13 +125,11 @@ function Login() {
               type="password" placeholder="••••••••"
               className={`fintech-input ${errors.password ? "shake" : ""}`}
               style={errors.password ? { borderColor: "var(--accent-red)" } : {}}
-              value={password} onChange={set("password")}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              value={password} onChange={set("password")} onKeyDown={(e) => e.key === "Enter" && handleLogin()}
             />
             {errors.password && <p style={{ color: "var(--accent-red)", fontSize: "0.75rem", margin: "5px 0 0" }}>⚠ {errors.password}</p>}
           </div>
 
-          {/* Server / Google error */}
           {serverError && (
             <div style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: 10, padding: "10px 14px", marginBottom: 20, color: "var(--accent-red)", fontSize: "0.875rem" }}>
               ⚠ {serverError}

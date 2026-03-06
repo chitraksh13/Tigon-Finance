@@ -1,3 +1,4 @@
+import { authFetch } from '../../utils/api';
 import { useState } from "react";
 import StockSearch from "./StockSearch";
 import { generateStockRecommendation } from "./ai/stockScoringEngine";
@@ -26,9 +27,7 @@ function ProDashboard({ income, totalExpenses }) {
     if (!symbol) return;
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:5000/stock/${symbol}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      const res = await authFetch(`/stock/${symbol}`);
       const data = await res.json();
       if (!res.ok) { alert(data.message || "Stock API error"); return; }
       const analysis = generateStockRecommendation({ peRatio: data.peRatio, roe: data.roe, changePercent: data.changePercent }, income, totalExpenses);

@@ -8,8 +8,6 @@ import About from "./pages/about";
 import Subscription from "./pages/subscription";
 import Contact from "./pages/contact";
 import StockScoring from "./pages/stockscoring";
-import AuthCallback from "./pages/AuthCallback";
-import PaymentSuccess from "./pages/PaymentSuccess";
 
 function PrivateRoute({ children, authChecked }) {
   const token = localStorage.getItem("token");
@@ -47,28 +45,22 @@ function App() {
   return (
     <Routes>
       {/* Public marketing pages */}
-      <Route path="/home"         element={<Home />} />
-      <Route path="/about"        element={<About />} />
+      <Route path="/home" element={<Home />} />
+      <Route path="/about" element={<About />} />
       <Route path="/subscription" element={<Subscription />} />
-      <Route path="/contact"      element={<Contact />} />
+      <Route path="/contact" element={<Contact />} />
 
       {/* Auth */}
-      <Route path="/login"    element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-
-      {/* Google OAuth callback */}
-      <Route path="/auth/callback" element={<AuthCallback />} />
-
-      {/* Payment success — protected so only logged-in users see it */}
-      <Route path="/payment/success" element={<PrivateRoute authChecked={authChecked}><PaymentSuccess /></PrivateRoute>} />
 
       {/* Protected app pages */}
       <Route path="/dashboard" element={<PrivateRoute authChecked={authChecked}><Dashboard /></PrivateRoute>} />
-      <Route path="/stocks"    element={<PrivateRoute authChecked={authChecked}><StockScoring /></PrivateRoute>} />
+      <Route path="/stocks" element={<PrivateRoute authChecked={authChecked}><StockScoring /></PrivateRoute>} />
 
-      {/* Default */}
-      <Route path="/"  element={<Navigate to="/home" replace />} />
-      <Route path="*"  element={<Navigate to="/home" replace />} />
+      {/* Default redirect */}
+      <Route path="/" element={<Navigate to="/home" replace />} />
+      <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   );
 }

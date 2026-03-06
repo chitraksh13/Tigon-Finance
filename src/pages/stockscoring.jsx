@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { generateStockRecommendation } from "../modules/pro/ai/stockScoringEngine";
+import { authFetch } from "../utils/api";
 
 const POPULAR_STOCKS = ["RELIANCE", "TCS", "INFY", "HDFC", "WIPRO", "ICICIBANK", "SBIN", "BAJFINANCE"];
 
@@ -67,9 +68,7 @@ export default function StockScoring() {
     setResult(null);
     setStockRaw(null);
     try {
-      const res = await fetch(`http://localhost:5000/stock/${s}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      const res = await authFetch(`/stock/${s}`);
       const data = await res.json();
       if (!res.ok) { setError(data.message || "Stock API error."); return; }
       setStockRaw(data);

@@ -13,7 +13,7 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
-const FRONTEND_URL = "http://localhost:5173";
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 // -------------------- MIDDLEWARE --------------------
 app.use(cors({ origin: FRONTEND_URL, credentials: true }));
@@ -73,7 +73,7 @@ app.post("/login", async (req, res) => {
 app.get("/auth/google", (req, res) => {
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
-    redirect_uri: `http://localhost:${PORT}/auth/google/callback`,
+    redirect_uri: `${process.env.BACKEND_URL || `http://localhost:${PORT}`}/auth/google/callback`,
     response_type: "code",
     scope: "openid email profile",
     access_type: "offline",
@@ -91,7 +91,7 @@ app.get("/auth/google/callback", async (req, res) => {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
         code, client_id: GOOGLE_CLIENT_ID, client_secret: GOOGLE_CLIENT_SECRET,
-        redirect_uri: `http://localhost:${PORT}/auth/google/callback`,
+        redirect_uri: `${process.env.BACKEND_URL || `http://localhost:${PORT}`}/auth/google/callback`,
         grant_type: "authorization_code",
       }),
     });
@@ -388,10 +388,70 @@ app.get("/portfolio", authenticateToken, async (req, res) => {
   }
 });
 
-// -------------------- START SERVER --------------------
-app.listen(PORT, () => {
-  console.log(`✅ Tigon backend running on http://localhost:${PORT}`);
-  console.log(`📈 Stock data: Yahoo Finance direct API`);
-  console.log(`🔐 Google OAuth: ${GOOGLE_CLIENT_ID ? "configured" : "⚠️  GOOGLE_CLIENT_ID missing"}`);
-  console.log(`💳 Razorpay: ${RAZORPAY_KEY_ID ? "configured" : "⚠️  RAZORPAY_KEY_ID missing"}`);
-});
+// -------------------- AUTO MIGRATE + START SERVER --------------------
+// Creates all tables automatically on first boot — no manual SQL needed.
+
+async function initDB() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id         SERIAL PRIMARY KEY,
+      name       VARCHAR(255) NOT NULL,
+      email      VARCHAR(255) UNIQUE NOT NULL,
+      password   VARCHAR(255),
+      google_id  VARCHAR(255),
+      role       VARCHAR(50) DEFAULT 'free',
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS expenses (
+      id         SERIAL PRIMARY KEY,
+      amount     NUMERIC NOT NULL,
+      category   VARCHAR(100) NOT NULL,
+      month      VARCHAR(20) NOT NULL,
+      user_id    INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS income (
+      id      SERIAL PRIMARY KEY,
+      amount  NUMERIC NOT NULL,
+      month   VARCHAR(20) NOT NULL,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS portfolio (
+      id              SERIAL PRIMARY KEY,
+      user_id         INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      symbol          VARCHAR(20) NOT NULL,
+      invested_amount NUMERIC,
+      purchase_price  NUMERIC,
+      quantity        NUMERIC,
+      created_at      TIMESTAMP DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS payments (
+      id                   SERIAL PRIMARY KEY,
+      user_id              INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      razorpay_order_id    VARCHAR(255),
+      razorpay_payment_id  VARCHAR(255),
+      amount               INTEGER,
+      status               VARCHAR(50),
+      created_at           TIMESTAMP DEFAULT NOW()
+    );
+  `);
+  console.log("✅ Database tables ready");
+}
+
+initDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`✅ Tigon backend running on port ${PORT}`);
+      console.log(`📈 Stock data: Yahoo Finance direct API`);
+      console.log(`🔐 Google OAuth: ${GOOGLE_CLIENT_ID ? "configured" : "⚠️  GOOGLE_CLIENT_ID missing"}`);
+      console.log(`💳 Razorpay: ${RAZORPAY_KEY_ID ? "configured" : "⚠️  RAZORPAY_KEY_ID missing"}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ Failed to initialise database:", err.message);
+    process.exit(1);
+  });

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { authFetch, BASE_URL } from "../utils/api";
 
 function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -17,20 +18,20 @@ function GoogleIcon() {
 }
 
 function Register() {
-  const [name, setName]         = useState("");
-  const [email, setEmail]       = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors]     = useState({});
+  const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   function validate() {
     const errs = {};
-    if (!name.trim())           errs.name = "Full name is required";
-    if (!email.trim())          errs.email = "Email is required";
+    if (!name.trim()) errs.name = "Full name is required";
+    if (!email.trim()) errs.email = "Email is required";
     else if (!validateEmail(email)) errs.email = "Please enter a valid email address";
-    if (!password)              errs.password = "Password is required";
+    if (!password) errs.password = "Password is required";
     else if (password.length < 6) errs.password = "Password must be at least 6 characters";
     return errs;
   }
@@ -42,9 +43,8 @@ function Register() {
     setServerError("");
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/register", {
+      const res = await authFetch("/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim(), email: email.trim(), password }),
       });
       const data = await res.json();
@@ -57,20 +57,14 @@ function Register() {
     }
   }
 
-  function handleGoogleSignUp() {
-    // Same Google OAuth flow — backend upserts so it works for both sign-up and sign-in
-    window.location.href = "http://localhost:5000/auth/google";
-  }
-
   const fields = [
-    { label: "Full Name",  field: "name",     type: "text",     placeholder: "John Doe",            value: name,     set: setName },
-    { label: "Email",      field: "email",    type: "email",    placeholder: "you@example.com",      value: email,    set: setEmail },
-    { label: "Password",   field: "password", type: "password", placeholder: "Min. 6 characters",    value: password, set: setPassword },
+    { label: "Full Name", field: "name", type: "text", placeholder: "John Doe", value: name, set: setName },
+    { label: "Email", field: "email", type: "email", placeholder: "you@example.com", value: email, set: setEmail },
+    { label: "Password", field: "password", type: "password", placeholder: "Min. 6 characters", value: password, set: setPassword },
   ];
 
   return (
-    <div className="min-h-screen grid-bg flex items-center justify-center p-4"
-      style={{ background: "var(--bg-primary)" }}>
+    <div className="min-h-screen grid-bg flex items-center justify-center p-4" style={{ background: "var(--bg-primary)" }}>
       <div style={{ position: "fixed", top: "10%", right: "20%", width: 450, height: 450, background: "radial-gradient(circle,rgba(167,139,250,0.06) 0%,transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "fixed", bottom: "15%", left: "10%", width: 400, height: 400, background: "radial-gradient(circle,rgba(56,189,248,0.05) 0%,transparent 70%)", pointerEvents: "none" }} />
 
@@ -78,23 +72,15 @@ function Register() {
         <div style={{ textAlign: "center", marginBottom: 36 }}>
           <Link to="/home" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none", marginBottom: 20 }}>
             <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg,#38bdf8,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 21, boxShadow: "0 4px 14px rgba(56,189,248,0.3)" }}>⚡</div>
-            <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "1.5rem", color: "var(--text-primary)", letterSpacing: "-0.03em" }}>
-              Tigon<span style={{ color: "var(--accent-cyan)" }}>.</span>
-            </span>
+            <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "1.5rem", color: "var(--text-primary)", letterSpacing: "-0.03em" }}>Tigon<span style={{ color: "var(--accent-cyan)" }}>.</span></span>
           </Link>
-          <h1 style={{ fontFamily: "Syne", fontSize: "1.875rem", fontWeight: 700, color: "var(--text-primary)", margin: "16px 0 8px" }}>
-            Create your account
-          </h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.9375rem", margin: 0 }}>
-            Start managing your finances intelligently
-          </p>
+          <h1 style={{ fontFamily: "Syne", fontSize: "1.875rem", fontWeight: 700, color: "var(--text-primary)", margin: "16px 0 8px" }}>Create your account</h1>
+          <p style={{ color: "var(--text-secondary)", fontSize: "0.9375rem", margin: 0 }}>Start managing your finances intelligently</p>
         </div>
 
         <div className="fintech-card" style={{ padding: 32 }}>
-
-          {/* Google Sign-Up */}
           <button
-            onClick={handleGoogleSignUp}
+            onClick={() => { window.location.href = `${BASE_URL}/auth/google`; }}
             style={{
               width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
               background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)",
@@ -102,21 +88,19 @@ function Register() {
               color: "var(--text-primary)", fontFamily: "DM Sans", fontSize: "0.9375rem", fontWeight: 500,
               transition: "background 0.2s, border-color 0.2s",
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.09)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.14)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "var(--border)"; }}
           >
             <GoogleIcon />
             Sign up with Google
           </button>
 
-          {/* Divider */}
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
             <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
             <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>or with email</span>
             <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
           </div>
 
-          {/* Form fields */}
           {fields.map(({ label, field, type, placeholder, value, set }) => (
             <div key={field} style={{ marginBottom: 16 }}>
               <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: 7, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</label>
