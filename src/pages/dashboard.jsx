@@ -66,7 +66,7 @@ function Dashboard() {
         </Link>
 
         {/* Nav links */}
-        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        <div className="dash-nav-center" style={{ alignItems: "center", gap: 4 }}>
           {[
             { label: "Dashboard", to: "/dashboard", active: true },
             { label: "AI Stocks", to: "/stocks", active: false },
@@ -84,9 +84,9 @@ function Dashboard() {
           ))}
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className="dash-nav-right">
           {/* Month selector */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="dash-month-pick" style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)", fontWeight: 500 }}>Period</span>
             <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="fintech-input" style={{ width: "auto", padding: "7px 12px", fontSize: "0.875rem" }} />
           </div>
@@ -119,7 +119,7 @@ function Dashboard() {
         )}
 
         {/* Stats */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 28 }}>
+        <div className="grid-3" style={{ gap: 16, marginBottom: 28 }}>
           {[
             { label: "Monthly Income", value: `₹${income.toLocaleString("en-IN")}`, bar: "linear-gradient(90deg,#38bdf8,#6366f1)", icon: "↑", iconBg: "rgba(56,189,248,0.12)", iconColor: "var(--accent-cyan)" },
             { label: "Total Expenses", value: `₹${totalExpense.toLocaleString("en-IN")}`, bar: "linear-gradient(90deg,#f87171,#ef4444)", icon: "↓", iconBg: "rgba(248,113,113,0.12)", iconColor: "var(--accent-red)" },
@@ -138,7 +138,7 @@ function Dashboard() {
         </div>
 
         {/* Main grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
+        <div className="grid-2" style={{ gap: 20, marginBottom: 20 }}>
           <IncomeInput income={income} setIncome={setIncome} onSave={saveIncome} />
           <ExpenseForm expenseAmount={expenseAmount} setExpenseAmount={setExpenseAmount} expenseCategory={expenseCategory} setExpenseCategory={setExpenseCategory} onAdd={addExpenses} amountError={amountError} />
         </div>

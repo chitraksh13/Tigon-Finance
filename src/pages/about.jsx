@@ -33,7 +33,7 @@ export default function About() {
 
       {/* Mission */}
       <section style={{ padding: "72px 24px", borderTop: "1px solid var(--border)" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center" }}>
+        <div className="grid-mission" style={{ maxWidth: 900, margin: "0 auto" }}>
           <div>
             <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--accent-cyan)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Our mission</span>
             <h2 style={{ fontFamily: "Syne", fontSize: "1.875rem", fontWeight: 800, color: "var(--text-primary)", margin: "14px 0 20px", letterSpacing: "-0.02em" }}>
@@ -46,7 +46,7 @@ export default function About() {
               We started in 2024 as a side project and grew to thousands of users without spending a rupee on advertising — purely word of mouth.
             </p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div className="grid-2" style={{ gap: 14 }}>
             {VALUES.map(({ icon, title, desc }) => (
               <div key={title} className="fintech-card" style={{ padding: 20 }}>
                 <div style={{ fontSize: 22, marginBottom: 10 }}>{icon}</div>
@@ -65,7 +65,7 @@ export default function About() {
             <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--accent-green)", textTransform: "uppercase", letterSpacing: "0.1em" }}>The team</span>
             <h2 style={{ fontFamily: "Syne", fontSize: "2rem", fontWeight: 800, color: "var(--text-primary)", margin: "12px 0 0", letterSpacing: "-0.02em" }}>People behind Tigon</h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 20 }}>
+          <div className="grid-2">
             {TEAM.map(({ name, role, emoji, bio }) => (
               <div key={name} className="fintech-card" style={{ padding: 28, textAlign: "center" }}>
                 <div style={{
@@ -84,7 +84,7 @@ export default function About() {
       </section>
 
       {/* Footer */}
-      <footer style={{ borderTop: "1px solid var(--border)", padding: "28px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <footer className="footer-row" style={{ borderTop: "1px solid var(--border)", padding: "24px 24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#38bdf8,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>⚡</div>
           <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "0.9rem", color: "var(--text-primary)" }}>Tigon<span style={{ color: "var(--accent-cyan)" }}>.</span></span>

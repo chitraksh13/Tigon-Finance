@@ -146,7 +146,7 @@ export default function StockScoring() {
               <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>
                 Enter NSE / BSE Symbol
               </label>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, marginBottom: 16 }}>
+              <div className="stock-search-row" style={{ marginBottom: 16 }}>
                 <input
                   type="text"
                   placeholder="e.g. RELIANCE, TCS, INFY"
@@ -190,7 +190,7 @@ export default function StockScoring() {
               <div className="fade-in">
                 {/* Score card */}
                 <div className="fintech-card" style={{ padding: 28, marginBottom: 20 }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+                  <div className="stock-header-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
                     <div>
                       <h2 style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "1.5rem", color: "var(--text-primary)", margin: "0 0 4px" }}>{symbol}</h2>
                       <p style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", margin: 0 }}>AI analysis complete</p>
@@ -214,7 +214,7 @@ export default function StockScoring() {
                 </div>
 
                 {/* Metrics */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 20 }}>
+                <div className="grid-3" style={{ gap: 14, marginBottom: 20 }}>
                   <MetricPill label="PE Ratio" value={stockRaw.peRatio ? Number(stockRaw.peRatio).toFixed(2) : "N/A"} good={stockRaw.peRatio && stockRaw.peRatio < 30} />
                   <MetricPill label="ROE (%)" value={stockRaw.roe ? `${Number(stockRaw.roe).toFixed(1)}%` : "N/A"} good={stockRaw.roe && stockRaw.roe > 15} />
                   <MetricPill label="Day Change" value={stockRaw.changePercent ? `${Number(stockRaw.changePercent).toFixed(2)}%` : "N/A"} good={stockRaw.changePercent > 0} />
@@ -229,9 +229,9 @@ export default function StockScoring() {
                     { label: "Momentum (Day Change)", max: 40, desc: "Positive change = bullish signal" },
                   ].map(({ label, max, desc }) => (
                     <div key={label} style={{ marginBottom: 14 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                      <div className="breakdown-row" style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                         <span style={{ fontSize: "0.875rem", color: "var(--text-primary)", fontWeight: 500 }}>{label}</span>
-                        <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
+                        <span className="breakdown-desc" style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{desc}</span>
                       </div>
                       <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 3 }}>
                         <div style={{ height: "100%", width: `${(max / 100) * 100}%`, background: "linear-gradient(90deg,#38bdf8,#6366f1)", borderRadius: 3, opacity: 0.5 }} />

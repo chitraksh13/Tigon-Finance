@@ -200,3 +200,124 @@ input[type="month"] { color-scheme: dark; }
   font-weight: 500;
   letter-spacing: 0.01em;
 }
+
+/* ============================================================
+   RESPONSIVE LAYOUT UTILITIES
+   Breakpoints:
+     --mobile:  ≤ 640px
+     --tablet:  641px – 1024px
+     --desktop: > 1024px
+   ============================================================ */
+
+/* ── Navbar ── */
+.nav-links-desktop { display: flex; }
+.nav-hamburger     { display: none; }
+.nav-mobile-menu   { display: none; }
+
+/* ── Generic layout helpers ── */
+.page-pad { padding-left: 24px; padding-right: 24px; }
+
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 24px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 20px; }
+.grid-1-1-6 { display: grid; grid-template-columns: 1fr 1.6fr; gap: 32px; align-items: start; }
+.grid-mission { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+
+.footer-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+.cta-box { padding: 60px 48px; }
+
+/* Dashboard nav */
+.dash-nav-center { display: flex; }
+.dash-nav-right   { display: flex; align-items: center; gap: 12px; }
+.dash-month-pick  { display: block; }
+
+/* Stock scoring */
+.stock-search-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; }
+
+/* ── TABLET  (≤ 1024px) ── */
+@media (max-width: 1024px) {
+  .grid-4     { grid-template-columns: repeat(2,1fr); }
+  .grid-3     { grid-template-columns: repeat(2,1fr); }
+  .grid-mission { gap: 32px; }
+  .cta-box    { padding: 48px 36px; }
+}
+
+/* ── MOBILE  (≤ 640px) ── */
+@media (max-width: 640px) {
+
+  /* Navbar */
+  .nav-links-desktop { display: none; }
+  .nav-auth-desktop  { display: none; }
+  .nav-hamburger {
+    display: flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    cursor: pointer; color: var(--text-primary); font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .nav-mobile-menu {
+    display: flex; flex-direction: column;
+    position: absolute; top: 68px; left: 0; right: 0;
+    background: rgba(8,12,20,0.97); backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px 20px; gap: 6px; z-index: 99;
+  }
+  .nav-mobile-link {
+    padding: 11px 14px; border-radius: 10px;
+    font-size: 0.9375rem; font-weight: 500;
+    color: var(--text-secondary); text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav-mobile-link:hover, .nav-mobile-link.active {
+    background: rgba(56,189,248,0.08); color: var(--accent-cyan);
+  }
+  .nav-mobile-divider {
+    height: 1px; background: var(--border); margin: 8px 0;
+  }
+  .nav-mobile-btn {
+    margin-top: 4px; width: 100%; text-align: center;
+  }
+
+  /* Layout */
+  .page-pad { padding-left: 16px; padding-right: 16px; }
+
+  .grid-4     { grid-template-columns: repeat(2,1fr); gap: 16px; }
+  .grid-3     { grid-template-columns: 1fr; }
+  .grid-2     { grid-template-columns: 1fr; }
+  .grid-1-1-6 { grid-template-columns: 1fr; }
+  .grid-mission { grid-template-columns: 1fr; gap: 32px; }
+
+  /* Hero sections */
+  .hero-pad { padding: 60px 16px 72px; }
+
+  /* CTA box */
+  .cta-box { padding: 36px 20px; }
+
+  /* Footer */
+  .footer-row { flex-direction: column; text-align: center; gap: 10px; }
+  .footer-links { justify-content: center; }
+
+  /* Dashboard nav */
+  .dash-nav-center { display: none; }
+  .dash-month-pick { display: none; }
+  .dash-nav-right  { gap: 8px; }
+
+  /* Stock scoring */
+  .stock-search-row { grid-template-columns: 1fr; }
+  .stock-header-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+
+  /* Metric pills */
+  .metrics-grid { grid-template-columns: 1fr; }
+
+  /* Pricing cards — stack on mobile */
+  .pricing-grid { grid-template-columns: 1fr !important; }
+  .pricing-grid > *:nth-child(2) { transform: none !important; }
+
+  /* Contact form name/email row */
+  .contact-name-email { grid-template-columns: 1fr !important; }
+
+  /* Score breakdown */
+  .breakdown-row { flex-direction: column; gap: 4px; }
+  .breakdown-desc { display: none; }
+}

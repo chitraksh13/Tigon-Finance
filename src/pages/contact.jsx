@@ -54,7 +54,7 @@ export default function Contact() {
 
       {/* Main */}
       <section style={{ padding: "0 24px 96px" }}>
-        <div style={{ maxWidth: 960, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1.6fr", gap: 32, alignItems: "start" }}>
+        <div className="grid-1-1-6" style={{ maxWidth: 960, margin: "0 auto" }}>
 
           {/* Left — contact types */}
           <div>
@@ -94,7 +94,7 @@ export default function Contact() {
               <>
                 <h3 style={{ fontFamily: "Syne", fontWeight: 700, fontSize: "1.125rem", color: "var(--text-primary)", margin: "0 0 24px" }}>Send us a message</h3>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+                <div className="contact-name-email" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
                   {[
                     { label: "Your name", field: "name", type: "text", placeholder: "John Doe" },
                     { label: "Email address", field: "email", type: "email", placeholder: "you@example.com" },
@@ -135,7 +135,7 @@ export default function Contact() {
         </div>
       </section>
 
-      <footer style={{ borderTop: "1px solid var(--border)", padding: "28px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <footer className="footer-row" style={{ borderTop: "1px solid var(--border)", padding: "24px 24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#38bdf8,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>⚡</div>
           <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "0.9rem", color: "var(--text-primary)" }}>Tigon<span style={{ color: "var(--accent-cyan)" }}>.</span></span>

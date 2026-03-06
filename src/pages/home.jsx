@@ -53,7 +53,7 @@ export default function Home() {
       <Navbar />
 
       {/* ── HERO ── */}
-      <section className="grid-bg" style={{ position: "relative", overflow: "hidden", padding: "100px 24px 120px" }}>
+      <section className="hero-pad grid-bg" style={{ position: "relative", overflow: "hidden" }}>
         {/* Glow orbs */}
         <div style={{ position: "absolute", top: "10%", left: "5%", width: 600, height: 600, background: "radial-gradient(circle,rgba(56,189,248,0.07) 0%,transparent 70%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: "0%", right: "5%", width: 500, height: 500, background: "radial-gradient(circle,rgba(99,102,241,0.07) 0%,transparent 70%)", pointerEvents: "none" }} />
@@ -105,7 +105,7 @@ export default function Home() {
 
       {/* ── STATS ── */}
       <section style={{ borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)", padding: "48px 24px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 24 }}>
+        <div className="grid-4" style={{ maxWidth: 900, margin: "0 auto" }}>
           {STATS.map(({ value, label }) => (
             <div key={label} style={{ textAlign: "center" }}>
               <div style={{ fontFamily: "Syne", fontSize: "2rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: 6 }}>{value}</div>
@@ -128,7 +128,7 @@ export default function Home() {
             </h2>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
+          <div className="grid-3">
             {FEATURES.map(({ icon, title, desc, color }) => (
               <div key={title} className="fintech-card" style={{ padding: 28, cursor: "default" }}>
                 <div style={{
@@ -153,7 +153,7 @@ export default function Home() {
         <div style={{ maxWidth: 700, margin: "0 auto" }}>
           <div style={{
             background: "linear-gradient(135deg,rgba(56,189,248,0.08),rgba(99,102,241,0.08))",
-            border: "1px solid rgba(56,189,248,0.18)", borderRadius: 24, padding: "60px 48px",
+            border: "1px solid rgba(56,189,248,0.18)", borderRadius: 24,
             textAlign: "center",
           }}>
             <h2 style={{ fontFamily: "Syne", fontSize: "clamp(1.5rem,3vw,2rem)", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 16px", letterSpacing: "-0.02em" }}>
@@ -179,7 +179,7 @@ export default function Home() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ borderTop: "1px solid var(--border)", padding: "32px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <footer className="footer-row" style={{ borderTop: "1px solid var(--border)", padding: "24px 24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#38bdf8,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>⚡</div>
           <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "0.9rem", color: "var(--text-primary)" }}>Tigon<span style={{ color: "var(--accent-cyan)" }}>.</span></span>
