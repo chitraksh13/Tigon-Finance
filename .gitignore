@@ -38,7 +38,7 @@ backend/.env
 *.local
 .env.production
 .env.download
-
+.env.local
 # =========================
 # Database
 # =========================

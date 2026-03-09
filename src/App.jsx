@@ -8,6 +8,7 @@ import About from "./pages/about";
 import Subscription from "./pages/subscription";
 import Contact from "./pages/contact";
 import StockScoring from "./pages/stockscoring";
+import AuthCallback from "./pages/AuthCallback";
 
 function PrivateRoute({ children, authChecked }) {
   const token = localStorage.getItem("token");
@@ -35,7 +36,7 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) { setAuthChecked(true); return; }
-    fetch("http://localhost:5000/profile", {
+    fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => { if (!res.ok) localStorage.removeItem("token"); })
@@ -53,6 +54,7 @@ function App() {
       {/* Auth */}
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
 
       {/* Protected app pages */}
       <Route path="/dashboard" element={<PrivateRoute authChecked={authChecked}><Dashboard /></PrivateRoute>} />
