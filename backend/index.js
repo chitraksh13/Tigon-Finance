@@ -279,32 +279,43 @@ app.get("/stock/:symbol", authenticateToken, async (req, res) => {
 });
 
 // -------------------- AI INSIGHTS ROUTE --------------------
+
 app.post("/ai-insights", authenticateToken, async (req, res) => {
   const { income, totalExpenses, categoryTotals, month } = req.body;
 
+  // 1. Check API key exists
   if (!process.env.ANTHROPIC_API_KEY) {
+    console.error("❌ ANTHROPIC_API_KEY is missing from environment variables");
     return res.status(500).json({ message: "AI service not configured." });
   }
 
-  const categoryBreakdown = Object.entries(categoryTotals || {})
-    .map(([cat, amt]) => `  - ${cat}: ₹${amt}`)
+  // 2. Check we have actual category data
+  if (!categoryTotals || Object.keys(categoryTotals).length === 0) {
+    console.warn("⚠️ No categoryTotals received — returning empty insights");
+    return res.json({ insights: [] });
+  }
+
+  const categoryBreakdown = Object.entries(categoryTotals)
+    .map(([cat, amt]) => `  - ${cat}: Rs.${amt}`)
     .join("\n");
 
   const prompt = `You are a personal finance advisor. A user has shared their financial data for ${month}:
 
-Income: ₹${income}
-Total Expenses: ₹${totalExpenses}
-Budget Balance: ₹${income - totalExpenses}
+Income: Rs.${income}
+Total Expenses: Rs.${totalExpenses}
+Budget Balance: Rs.${income - totalExpenses}
 
 Expense Breakdown:
-${categoryBreakdown || "  No expenses recorded yet."}
+${categoryBreakdown}
 
-Provide exactly 4 short, specific, actionable financial insights based on this data. 
+Provide exactly 4 short, specific, actionable financial insights based on this data.
 Each insight should be 1-2 sentences maximum.
 Format as a JSON array of strings like: ["insight1", "insight2", "insight3", "insight4"]
 Only return the JSON array, nothing else.`;
 
   try {
+    console.log("📡 Calling Anthropic API for user", req.user.userId);
+
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -319,16 +330,41 @@ Only return the JSON array, nothing else.`;
       }),
     });
 
+    console.log("📡 Anthropic response status:", response.status);
+
     const data = await response.json();
-    console.log("Claude response status:", response.status, JSON.stringify(data).slice(0, 200));
-    const text = data.content?.[0]?.text || "[]";
-    const insights = JSON.parse(text);
+
+    // 3. Check for API-level errors (wrong key, quota, etc.)
+    if (data.error) {
+      console.error("❌ Anthropic API error:", data.error.message);
+      return res.status(500).json({ message: `AI error: ${data.error.message}` });
+    }
+
+    const text = data.content?.[0]?.text;
+    if (!text) {
+      console.error("❌ No text in Anthropic response:", JSON.stringify(data));
+      return res.status(500).json({ message: "Empty response from AI." });
+    }
+
+    console.log("✅ Claude raw response:", text.slice(0, 200));
+
+    // 4. Robustly extract the JSON array regardless of markdown fences
+    const match = text.match(/\[[\s\S]*\]/);
+    if (!match) {
+      console.error("❌ Could not find JSON array in Claude response:", text);
+      return res.status(500).json({ message: "Invalid AI response format." });
+    }
+
+    const insights = JSON.parse(match[0]);
+    console.log("✅ Insights generated successfully for user", req.user.userId);
     res.json({ insights });
+
   } catch (err) {
-    console.error("Claude API error:", err);
+    console.error("❌ Claude API fetch error:", err.message);
     res.status(500).json({ message: "Failed to generate insights." });
   }
 });
+
 // -------------------- RAZORPAY PAYMENT ROUTES --------------------
 
 // Step 1 — Frontend calls this to create a Razorpay order
@@ -500,6 +536,7 @@ initDB()
       console.log(`📈 Stock data: Yahoo Finance direct API`);
       console.log(`🔐 Google OAuth: ${GOOGLE_CLIENT_ID ? "configured" : "⚠️  GOOGLE_CLIENT_ID missing"}`);
       console.log(`💳 Razorpay: ${RAZORPAY_KEY_ID ? "configured" : "⚠️  RAZORPAY_KEY_ID missing"}`);
+      console.log(`🤖 Claude AI: ${process.env.ANTHROPIC_API_KEY ? "configured" : "⚠️  ANTHROPIC_API_KEY missing"}`);
     });
   })
   .catch((err) => {
