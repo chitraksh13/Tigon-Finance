@@ -77,15 +77,18 @@ function Dashboard() {
     loadProfile();
   }, [selectedMonth]);
 
-  useEffect(() => {
-    if (expenses.length > 0) {
-      const cats = expenses.reduce((acc, e) => {
-        acc[e.category] = (acc[e.category] || 0) + Number(e.amount || 0);
-        return acc;
-      }, {});
-      loadAiInsights(expenses, income, cats, selectedMonth);
-    }
-  }, [expenses, income]);
+useEffect(() => {
+  if (expenses.length === 0) return;
+
+  const cats = expenses.reduce((acc, e) => {
+    acc[e.category] = (acc[e.category] || 0) + Number(e.amount || 0);
+    return acc;
+  }, {});
+
+  if (Object.keys(cats).length === 0) return;
+
+  loadAiInsights(expenses, income, cats, selectedMonth);
+}, [expenses, income]);
 
   // ── Expense / Income actions ─────────────────────────────────────────────────
   async function addExpenses() {
