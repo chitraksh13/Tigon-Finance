@@ -313,13 +313,14 @@ Only return the JSON array, nothing else.`;
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
+        model: "claude-haiku-4-5",
         max_tokens: 500,
         messages: [{ role: "user", content: prompt }],
       }),
     });
 
     const data = await response.json();
+    console.log("Claude response status:", response.status, JSON.stringify(data).slice(0, 200));
     const text = data.content?.[0]?.text || "[]";
     const insights = JSON.parse(text);
     res.json({ insights });
