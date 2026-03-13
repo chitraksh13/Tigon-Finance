@@ -28,52 +28,126 @@ function Dashboard() {
   const role = localStorage.getItem("role");
   const isPro = role === "pro" || role === "premium";
 
-  useEffect(() => { loadExpenses(); loadIncome(); loadProfile(); }, [selectedMonth]);
-  useEffect(() => {
-  if (expenses.length > 0) loadAiInsights();
-}, [expenses, income]);
-  async function loadProfile() { const d = await apiGet("/profile"); if (d) setUser(d); }
-  async function loadExpenses() { try { const d = await apiGet(`/expenses?month=${selectedMonth}`); setExpenses(Array.isArray(d) ? d : []); } catch { setExpenses([]); } }
-  async function loadIncome() { try { const d = await apiGet(`/income?month=${selectedMonth}`); setIncome(Number(d?.amount || 0)); } catch { setIncome(0); } }
+  // ── Data loaders ────────────────────────────────────────────────────────────
+  async function loadProfile() {
+    const d = await apiGet("/profile");
+    if (d) setUser(d);
+  }
 
+  async function loadExpenses() {
+    try {
+      const d = await apiGet(`/expenses?month=${selectedMonth}`);
+      setExpenses(Array.isArray(d) ? d : []);
+    } catch {
+      setExpenses([]);
+    }
+  }
+
+  async function loadIncome() {
+    try {
+      const d = await apiGet(`/income?month=${selectedMonth}`);
+      setIncome(Number(d?.amount || 0));
+    } catch {
+      setIncome(0);
+    }
+  }
+
+  async function loadAiInsights(currentExpenses, currentIncome, currentCategoryTotals, currentMonth) {
+    if (Object.keys(currentCategoryTotals).length === 0) return;
+    setInsightsLoading(true);
+    try {
+      const data = await apiPost("/ai-insights", {
+        income: currentIncome,
+        totalExpenses: currentExpenses.reduce((s, e) => s + Number(e.amount), 0),
+        categoryTotals: currentCategoryTotals,
+        month: currentMonth,
+      });
+      if (data?.insights) setAiInsights(data.insights);
+    } catch {
+      setAiInsights(["Could not load AI insights. Please try again."]);
+    } finally {
+      setInsightsLoading(false);
+    }
+  }
+
+  // ── Effects ─────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    loadExpenses();
+    loadIncome();
+    loadProfile();
+  }, [selectedMonth]);
+
+  useEffect(() => {
+    if (expenses.length > 0) {
+      const cats = expenses.reduce((acc, e) => {
+        acc[e.category] = (acc[e.category] || 0) + Number(e.amount || 0);
+        return acc;
+      }, {});
+      loadAiInsights(expenses, income, cats, selectedMonth);
+    }
+  }, [expenses, income]);
+
+  // ── Expense / Income actions ─────────────────────────────────────────────────
   async function addExpenses() {
-    if (Number(expenseAmount) <= 0) { setAmountError(true); setTimeout(() => setAmountError(false), 400); return; }
-    try { await apiPost("/add-expense", { amount: Number(expenseAmount), category: expenseCategory, month: selectedMonth }); await loadExpenses(); setExpenseAmount(""); setExpenseCategory(""); } catch {}
+    if (Number(expenseAmount) <= 0) {
+      setAmountError(true);
+      setTimeout(() => setAmountError(false), 400);
+      return;
+    }
+    try {
+      await apiPost("/add-expense", {
+        amount: Number(expenseAmount),
+        category: expenseCategory,
+        month: selectedMonth,
+      });
+      await loadExpenses();
+      setExpenseAmount("");
+      setExpenseCategory("");
+    } catch {}
   }
 
   async function saveEditExpense(id) {
-    if (Number(editAmount) <= 0) { setEditAmountError(true); setTimeout(() => setEditAmountError(false), 400); return; }
-    try { await apiPut(`/expenses/${id}`, { amount: Number(editAmount), category: editCategory, month: selectedMonth }); await loadExpenses(); setEditingId(null); } catch {}
+    if (Number(editAmount) <= 0) {
+      setEditAmountError(true);
+      setTimeout(() => setEditAmountError(false), 400);
+      return;
+    }
+    try {
+      await apiPut(`/expenses/${id}`, {
+        amount: Number(editAmount),
+        category: editCategory,
+        month: selectedMonth,
+      });
+      await loadExpenses();
+      setEditingId(null);
+    } catch {}
   }
 
-  async function deleteExpense(id) { try { await apiDelete(`/expenses/${id}?month=${selectedMonth}`); await loadExpenses(); } catch {} }
-  async function saveIncome() { try { await apiPost("/set-income", { amount: income, month: selectedMonth }); } catch {} }
+  async function deleteExpense(id) {
+    try {
+      await apiDelete(`/expenses/${id}?month=${selectedMonth}`);
+      await loadExpenses();
+    } catch {}
+  }
 
+  async function saveIncome() {
+    try {
+      await apiPost("/set-income", { amount: income, month: selectedMonth });
+    } catch {}
+  }
+
+  // ── Derived values ──────────────────────────────────────────────────────────
   const safeExpenses = Array.isArray(expenses) ? expenses : [];
   const totalExpense = safeExpenses.reduce((s, e) => s + Number(e.amount || 0), 0);
   const savings = income - totalExpense;
   const savingsRate = income > 0 ? Math.round((savings / income) * 100) : 0;
-  const categoryTotals = safeExpenses.reduce((acc, e) => { acc[e.category] = (acc[e.category] || 0) + Number(e.amount || 0); return acc; }, {});
-  <InsightsPanel insights={aiInsights} loading={insightsLoading} />
+  const categoryTotals = safeExpenses.reduce((acc, e) => {
+    acc[e.category] = (acc[e.category] || 0) + Number(e.amount || 0);
+    return acc;
+  }, {});
   const chartData = Object.entries(categoryTotals).map(([name, value]) => ({ name, value }));
 
-  async function loadAiInsights() {
-  if (Object.keys(categoryTotals).length === 0) return;
-  setInsightsLoading(true);
-  try {
-    const data = await apiPost("/ai-insights", {
-      income,
-      totalExpenses: expenses.reduce((s, e) => s + Number(e.amount), 0),
-      categoryTotals,
-      month: selectedMonth,
-    });
-    if (data?.insights) setAiInsights(data.insights);
-  } catch {
-    setAiInsights(["Could not load AI insights. Please try again."]);
-  } finally {
-    setInsightsLoading(false);
-  }
-}
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div style={{ background: "var(--bg-primary)", minHeight: "100vh" }}>
       <div style={{ position: "fixed", top: "5%", right: "5%", width: 600, height: 600, background: "radial-gradient(circle,rgba(56,189,248,0.04) 0%,transparent 70%)", pointerEvents: "none", zIndex: 0 }} />
@@ -167,7 +241,7 @@ function Dashboard() {
           <ExpenseList expenses={safeExpenses} editingId={editingId} setEditingId={setEditingId} editAmount={editAmount} setEditAmount={setEditAmount} editCategory={editCategory} setEditCategory={setEditCategory} onSaveEdit={saveEditExpense} onDelete={deleteExpense} editAmountError={editAmountError} />
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             <ExpenseChart chartData={chartData} />
-            <InsightsPanel insights={insights} />
+            <InsightsPanel insights={aiInsights} loading={insightsLoading} />
           </div>
         </div>
 
