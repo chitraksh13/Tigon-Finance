@@ -278,6 +278,56 @@ app.get("/stock/:symbol", authenticateToken, async (req, res) => {
   return res.status(404).json({ message: `Stock "${clean}" not found.` });
 });
 
+// -------------------- AI INSIGHTS ROUTE --------------------
+app.post("/ai-insights", authenticateToken, async (req, res) => {
+  const { income, totalExpenses, categoryTotals, month } = req.body;
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return res.status(500).json({ message: "AI service not configured." });
+  }
+
+  const categoryBreakdown = Object.entries(categoryTotals || {})
+    .map(([cat, amt]) => `  - ${cat}: ₹${amt}`)
+    .join("\n");
+
+  const prompt = `You are a personal finance advisor. A user has shared their financial data for ${month}:
+
+Income: ₹${income}
+Total Expenses: ₹${totalExpenses}
+Budget Balance: ₹${income - totalExpenses}
+
+Expense Breakdown:
+${categoryBreakdown || "  No expenses recorded yet."}
+
+Provide exactly 4 short, specific, actionable financial insights based on this data. 
+Each insight should be 1-2 sentences maximum.
+Format as a JSON array of strings like: ["insight1", "insight2", "insight3", "insight4"]
+Only return the JSON array, nothing else.`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": process.env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 500,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+
+    const data = await response.json();
+    const text = data.content?.[0]?.text || "[]";
+    const insights = JSON.parse(text);
+    res.json({ insights });
+  } catch (err) {
+    console.error("Claude API error:", err);
+    res.status(500).json({ message: "Failed to generate insights." });
+  }
+});
 // -------------------- RAZORPAY PAYMENT ROUTES --------------------
 
 // Step 1 — Frontend calls this to create a Razorpay order

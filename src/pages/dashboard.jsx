@@ -5,7 +5,6 @@ import ExpenseForm from "../components/ExpenseForm";
 import ExpenseList from "../components/ExpenseList";
 import ExpenseChart from "../components/ExpenseChart";
 import InsightsPanel from "../components/InsightsPanel";
-import { generateInsights } from "../utils/insightsEngine";
 import { apiGet, apiPost, apiPut, apiDelete } from "../utils/api";
 
 function Dashboard() {
@@ -23,12 +22,16 @@ function Dashboard() {
   const [amountError, setAmountError] = useState(false);
   const [editAmountError, setEditAmountError] = useState(false);
   const [user, setUser] = useState(null);
+  const [aiInsights, setAiInsights] = useState([]);
+  const [insightsLoading, setInsightsLoading] = useState(false);
 
   const role = localStorage.getItem("role");
   const isPro = role === "pro" || role === "premium";
 
   useEffect(() => { loadExpenses(); loadIncome(); loadProfile(); }, [selectedMonth]);
-
+  useEffect(() => {
+  if (expenses.length > 0) loadAiInsights();
+}, [expenses, income]);
   async function loadProfile() { const d = await apiGet("/profile"); if (d) setUser(d); }
   async function loadExpenses() { try { const d = await apiGet(`/expenses?month=${selectedMonth}`); setExpenses(Array.isArray(d) ? d : []); } catch { setExpenses([]); } }
   async function loadIncome() { try { const d = await apiGet(`/income?month=${selectedMonth}`); setIncome(Number(d?.amount || 0)); } catch { setIncome(0); } }
@@ -51,9 +54,26 @@ function Dashboard() {
   const savings = income - totalExpense;
   const savingsRate = income > 0 ? Math.round((savings / income) * 100) : 0;
   const categoryTotals = safeExpenses.reduce((acc, e) => { acc[e.category] = (acc[e.category] || 0) + Number(e.amount || 0); return acc; }, {});
-  const insights = generateInsights(categoryTotals);
+  <InsightsPanel insights={aiInsights} loading={insightsLoading} />
   const chartData = Object.entries(categoryTotals).map(([name, value]) => ({ name, value }));
 
+  async function loadAiInsights() {
+  if (Object.keys(categoryTotals).length === 0) return;
+  setInsightsLoading(true);
+  try {
+    const data = await apiPost("/ai-insights", {
+      income,
+      totalExpenses: expenses.reduce((s, e) => s + Number(e.amount), 0),
+      categoryTotals,
+      month: selectedMonth,
+    });
+    if (data?.insights) setAiInsights(data.insights);
+  } catch {
+    setAiInsights(["Could not load AI insights. Please try again."]);
+  } finally {
+    setInsightsLoading(false);
+  }
+}
   return (
     <div style={{ background: "var(--bg-primary)", minHeight: "100vh" }}>
       <div style={{ position: "fixed", top: "5%", right: "5%", width: 600, height: 600, background: "radial-gradient(circle,rgba(56,189,248,0.04) 0%,transparent 70%)", pointerEvents: "none", zIndex: 0 }} />
